@@ -1,7 +1,7 @@
 package main
 
-import "github.com/ymzuiku/gojest/gojest"
+import "github.com/ymzuiku/gojest/watch"
 
 func main() {
-	gojest.Start()
+	watch.Start()
 }

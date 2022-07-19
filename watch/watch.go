@@ -1,4 +1,4 @@
-package gojest
+package watch
 
 import (
 	"context"
@@ -64,7 +64,7 @@ func Start() {
 
 	runAll()
 	for {
-		fmt.Println("\nPlease input: all(a), focus last(f), quit(q)11")
+		fmt.Println("\nPlease input: all(a), focus last(f), quit(q)")
 		char, key, err := keyboard.GetKey()
 
 		if err != nil {

@@ -1,4 +1,4 @@
-package gojest_test
+package watch_test
 
 import (
 	"fmt"
