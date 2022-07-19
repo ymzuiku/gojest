@@ -1,4 +1,4 @@
-If you need red path log, you can use `gojest/it`, it package from `testify/assert`
+If you need log red path, you can use `gojest/it`, it package from `testify/assert`
 
 1. First get pkg in your mod:
 

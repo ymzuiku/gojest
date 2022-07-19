@@ -2,6 +2,8 @@
 
 gojest is like jest(nodejs) in golang.
 
+This git is retest first fail on keydown `f`:
+
 ![](./gojest.gif)
 
 ## install
@@ -12,14 +14,12 @@ $ go install github.com/ymzuiku/gojest@latest
 
 ## use
 
-In your project run:
+In your project run, that's all:
 
 ```sh
 gojest
 ```
 
-It's all.
-
 ## other
 
-[If you need red path log](./README_it.md)
+[If you need log red path](./README_it.md)
