@@ -1,7 +1,5 @@
 # gojest/it
 
-[[![Go Report Card](https://github.com/ymzuiku/gojest)](https://github.com/ymzuiku/gojest) [![PkgGoDev](https://pkg.go.dev/github.com/ymzuiku/gojest)](https://pkg.go.dev/github.com/ymzuiku/gojest)
-
 If you need log red path, you can use `gojest/it`, it package from `testify/assert`
 
 1. First get pkg in your mod:
