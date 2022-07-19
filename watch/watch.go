@@ -96,7 +96,7 @@ func runAll() {
 func runNoCacheAll() {
 	lastFail = ""
 	execx.CallClear()
-	fmt.Println("run all ...")
+	fmt.Println("run all no use cache ...")
 	execx.Run(context.Background(), filter, "go", "test", "./...", "-count=1")
 }
 
