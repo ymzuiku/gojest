@@ -12,7 +12,6 @@ import (
 
 1. 约定不要有多余的message参数
 2. 会使用stack包裹, 高亮显示, 方便定位
-3. 遇到错误，使用 FailNow
 */
 
 var fails = 0
@@ -21,7 +20,7 @@ func fail(t *testing.T) {
 	stack.Debug = true
 	fails += 1
 	t.Logf("Faile:%d %s", fails, stack.Red(stack.FileLine(3)))
-	t.FailNow()
+	// t.FailNow()
 }
 
 func Equal(t *testing.T, a, b any) {

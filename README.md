@@ -18,6 +18,8 @@ In your project run:
 gojest
 ```
 
+It's all.
+
 ## other
 
 If you need red path log, you can use `gojest/it`, it package from `testify/assert`
