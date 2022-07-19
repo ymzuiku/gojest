@@ -22,10 +22,10 @@ gojest
 
 And when your keydown:
 
-- a: Test all
-- f: Focus test first fail
-- c: Test all and not use cache
-- q: Quit
+- Test all: `a`
+- Focus test first fail: `f`
+- Test all and not use cache: `c`
+- Quit: `q`
 
 ## other
 
