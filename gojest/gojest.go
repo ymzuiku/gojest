@@ -3,13 +3,13 @@ package gojest
 import (
 	"context"
 	"fmt"
-	"log"
 	"os"
 	"regexp"
 	"strings"
 
 	"github.com/eiannone/keyboard"
 	"github.com/ymzuiku/gojest/execx"
+	"github.com/ymzuiku/gojest/pwd"
 )
 
 var failReg = regexp.MustCompile(`--- FAIL`)
@@ -18,22 +18,9 @@ var fnReg = regexp.MustCompile(`--- FAIL: (.*?) \(`)
 
 var lastFail = ""
 
-var pwd = ""
-
-func loadFileDir() string {
-	if pwd == "" {
-		file, err := os.Getwd()
-		if err != nil {
-			log.Fatalln(err)
-		}
-		pwd = file
-	}
-	return pwd
-}
-
 // 是否整行都只是路径
 func isonlyPath(v string) bool {
-	return strings.Contains(v, loadFileDir()) && !strings.Contains(strings.Replace(v, loadFileDir(), "", 1), " ")
+	return strings.Contains(v, pwd.Load()) && !strings.Contains(strings.Replace(v, pwd.Load(), "", 1), " ")
 }
 
 func filter(line string) string {
@@ -77,7 +64,7 @@ func Start() {
 
 	runAll()
 	for {
-		fmt.Println("\nPlease input: all(a), focus last(f), quit(q)")
+		fmt.Println("\nPlease input: all(a), focus last(f), quit(q)11")
 		char, key, err := keyboard.GetKey()
 
 		if err != nil {
