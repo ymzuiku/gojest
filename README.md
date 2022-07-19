@@ -24,6 +24,14 @@ It's all.
 
 If you need red path log, you can use `gojest/it`, it package from `testify/assert`
 
+1. First get pkg in your mod:
+
+```sh
+$ go get github.com/ymzuiku/gojest
+```
+
+2. Use `gojest/it` in your test:
+
 ```go
 package xxx
 
