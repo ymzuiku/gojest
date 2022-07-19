@@ -2,6 +2,8 @@
 
 gojest is like jest(nodejs) in golang.
 
+[[![Go Report Card](https://github.com/ymzuiku/gojest)](https://github.com/ymzuiku/gojest) [![PkgGoDev](https://pkg.go.dev/github.com/ymzuiku/gojest)](https://pkg.go.dev/github.com/ymzuiku/gojest)
+
 This git is retest first fail on keydown `f`:
 
 ![](./gojest.gif)
