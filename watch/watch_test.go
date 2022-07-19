@@ -1,7 +1,6 @@
 package watch_test
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/ymzuiku/gojest/it"
@@ -9,9 +8,23 @@ import (
 
 func TestGojest(t *testing.T) {
 
-	for i := 0; i < 5; i++ {
-		t.Run(fmt.Sprintf("error %d", i), func(t *testing.T) {
-			it.Equal(t, 20, 30)
-		})
-	}
+	t.Run("error 1", func(t *testing.T) {
+		it.Equal(t, 100, 1)
+	})
+
+	t.Run("error 2", func(t *testing.T) {
+		it.Equal(t, 20, 2)
+	})
+
+	t.Run("error 3", func(t *testing.T) {
+		it.Equal(t, 20, 3)
+	})
+
+	t.Run("error 4", func(t *testing.T) {
+		it.Equal(t, 20, 4)
+	})
+
+	t.Run("error 5", func(t *testing.T) {
+		it.Equal(t, 20, 5)
+	})
 }
