@@ -1,6 +1,6 @@
 # gojest
 
-gojest is list jest(nodejs) in golang.
+gojest is like jest(nodejs) in golang.
 
 ![](./gojest.gif)
 
