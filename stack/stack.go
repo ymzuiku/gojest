@@ -25,7 +25,7 @@ func New(err error) error {
 
 	_, file, line, ok := runtime.Caller(1)
 	if !ok {
-		return errors.New("[errox]WrapError runtime.Caller Fail")
+		return errors.New("WrapError runtime.Caller Fail")
 	}
 
 	return fmt.Errorf("%s:%d %w", parseFile(file), line, err)
