@@ -12,7 +12,7 @@ import (
 var Debug = false
 
 func parseFile(file string) string {
-	return "." + strings.Replace(file, pwd.Load(), "", 1)
+	return strings.Replace(file, pwd.Load(), ".", 1)
 }
 
 func New(err error) error {
@@ -58,13 +58,3 @@ func FileLine(caller int) string {
 func Red(str string) string {
 	return fmt.Sprintf("\033[0;37;41m%s\033[0m", str)
 }
-
-var fails = 0
-
-// func Pin(fail bool) bool {
-// 	if !fail {
-// 		fails += 1
-// 		fmt.Printf("\nFaile:%d %s\n", fails, Red(FileLine(2)))
-// 	}
-// 	return fail
-// }

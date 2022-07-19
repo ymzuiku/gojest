@@ -23,6 +23,10 @@ func isonlyPath(v string) bool {
 	return strings.Contains(v, pwd.Load()) && !strings.Contains(strings.Replace(v, pwd.Load(), "", 1), " ")
 }
 
+func replacePwd(v string) string {
+	return strings.ReplaceAll(v, pwd.Load(), ".")
+}
+
 func filter(line string) string {
 	list := strings.Split(line, "\n")
 	nextLine := []string{}
@@ -38,7 +42,7 @@ func filter(line string) string {
 				lastFail = name
 			}
 		}
-		nextLine = append(nextLine, v)
+		nextLine = append(nextLine, replacePwd(v))
 	}
 
 	return strings.Join(nextLine, "\n")
