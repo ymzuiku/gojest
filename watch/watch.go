@@ -51,6 +51,7 @@ func filter(line string) string {
 var runner = map[string]func(){
 	"a": runAll,
 	"f": runFocus,
+	"c": runNoCacheAll,
 	"q": runQuit,
 }
 
@@ -68,7 +69,7 @@ func Start() {
 
 	runAll()
 	for {
-		fmt.Println("\nPlease input: all(a), focus last(f), quit(q)")
+		fmt.Println("\nPlease keydown: all(a), focus last(f), clear cache all(c), quit(q)...")
 		char, key, err := keyboard.GetKey()
 
 		if err != nil {
@@ -90,6 +91,13 @@ func runAll() {
 	execx.CallClear()
 	fmt.Println("run all ...")
 	execx.Run(context.Background(), filter, "go", "test", "./...")
+}
+
+func runNoCacheAll() {
+	lastFail = ""
+	execx.CallClear()
+	fmt.Println("run all ...")
+	execx.Run(context.Background(), filter, "go", "test", "./...", "-count=1")
 }
 
 func runFocus() {
