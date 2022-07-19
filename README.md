@@ -2,7 +2,7 @@
 
 gojest is list jest(nodejs) in golang.
 
-[](./gojest.gif)
+![](./gojest.gif)
 
 ## install
 
@@ -18,7 +18,7 @@ In your project run:
 gojest
 ```
 
-## red path assert (option)
+## other
 
 If you need red path log, you can use `gojest/it`, it package from `testify/assert`
 
