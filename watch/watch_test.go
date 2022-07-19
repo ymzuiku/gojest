@@ -9,15 +9,16 @@ import (
 func TestGojest(t *testing.T) {
 
 	t.Run("error 1", func(t *testing.T) {
-		it.Equal(t, 100, 1)
+		it.Equal(t, 1, 1)
 	})
 
 	t.Run("error 2", func(t *testing.T) {
-		it.Equal(t, 20, 2)
+		it.Equal(t, 2, 2)
 	})
 
 	t.Run("error 3", func(t *testing.T) {
 		it.Equal(t, 20, 3)
+		panic("222")
 	})
 
 	t.Run("error 4", func(t *testing.T) {
