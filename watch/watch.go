@@ -13,6 +13,7 @@ import (
 )
 
 var failReg = regexp.MustCompile(`--- FAIL`)
+var onlyFailReg = regexp.MustCompile(`^FAIL`)
 
 var fnReg = regexp.MustCompile(`--- FAIL: (.*?) \(`)
 
@@ -31,7 +32,7 @@ func filter(line string) string {
 	list := strings.Split(line, "\n")
 	nextLine := []string{}
 	for _, v := range list {
-		if strings.Contains(v, "ok   ") || strings.Contains(v, "(cached)") || strings.Contains(v, "[no test files]") || strings.Contains(v, "[no tests to run]") || isonlyPath(v) {
+		if strings.Contains(v, "ok   ") || strings.Contains(v, "(cached)") || strings.Contains(v, "[no test files]") || strings.Contains(v, "[no tests to run]") || onlyFailReg.MatchString(v) || isonlyPath(v) {
 			continue
 		}
 		if failReg.MatchString(v) {
