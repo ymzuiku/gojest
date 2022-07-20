@@ -13,6 +13,7 @@ import (
 	"github.com/ymzuiku/gojest/pwd"
 )
 
+var passReg = regexp.MustCompile(`^ok `)
 var failReg = regexp.MustCompile(`--- FAIL`)
 var onlyFailReg = regexp.MustCompile(`^FAIL`)
 var fnReg = regexp.MustCompile(`--- FAIL: (.*?) \(`)
@@ -25,11 +26,10 @@ func isonlyPath(v string) bool {
 }
 
 var lastLine = ""
+var passNum = 0
 
 func filter(line string) string {
-	// defer func() {
-	// 	lastFail = line
-	// }()
+
 	list := strings.Split(line, "\n")
 	nextLine := []string{}
 	for _, v := range list {
@@ -44,8 +44,10 @@ func filter(line string) string {
 		if strings.Contains(v, "Error Trace:") {
 			lastLine = v
 		}
-
-		if strings.Contains(v, "ok  ") || strings.Contains(v, "(cached)") || strings.Contains(v, "[no test files]") || strings.Contains(v, "[no tests to run]") || onlyFailReg.MatchString(v) || isonlyPath(v) {
+		if passReg.MatchString(v) {
+			passNum += 1
+		}
+		if strings.Contains(v, "(cached)") || strings.Contains(v, "[no test files]") || strings.Contains(v, "[no tests to run]") || onlyFailReg.MatchString(v) || isonlyPath(v) {
 			continue
 		}
 		if failReg.MatchString(v) {
@@ -63,7 +65,7 @@ func filter(line string) string {
 	if len(nextLine) == 0 {
 		return "-"
 	}
-	return strings.Join(nextLine, "\n") + "\n"
+	return strings.Join(nextLine, "\n")
 }
 
 var runner = map[string]func(){
@@ -135,14 +137,21 @@ func Start() {
 	}
 }
 
+func beforeRun() {
+	passNum = 0
+	execx.CallClear()
+}
+
 func afterRun() {
 	if lastFail == "" {
-		fmt.Println("\n== Pass")
+		fmt.Printf("\n== PASS all: %d", passNum)
+	} else {
+		fmt.Printf("\n== PASS: %d", passNum)
 	}
 }
 
 func runAll() {
-	execx.CallClear()
+	beforeRun()
 	lastFail = ""
 	fmt.Println("Run all:")
 	execx.Run(context.Background(), filter, "go", "test", url)
@@ -150,15 +159,15 @@ func runAll() {
 }
 
 func runNoCacheAll() {
+	beforeRun()
 	lastFail = ""
-	execx.CallClear()
 	fmt.Println("Run all no use cache:")
 	execx.Run(context.Background(), filter, "go", "test", url, "-count=1")
 	afterRun()
 }
 
 func runFocus() {
-	execx.CallClear()
+	beforeRun()
 	if lastFail == "" {
 		fmt.Println("Not have last fails, run all")
 		runAll()
@@ -175,7 +184,7 @@ func runFocus() {
 }
 
 func runNoCacheFocus() {
-	execx.CallClear()
+	beforeRun()
 	if lastFail == "" {
 		fmt.Println("Not have last fails")
 		runAll()
