@@ -26,3 +26,22 @@ func TestGojest(t *testing.T) {
 	})
 }
 ```
+
+## FailNow in everyone
+
+In one test item, if your need block in first assert fail, you can set `it.UseFailNow` to `false`:
+
+```go
+package xxx
+
+import (
+	"testing"
+
+	"github.com/ymzuiku/gojest/it"
+)
+
+func init(){
+	it.UseFailNow = true
+}
+
+```
