@@ -11,6 +11,7 @@ This gif is focus test first fail on keydown `f`:
 - Interactive CLI
 - Keep your test behavior, Just use `go test ./...`
 - Remove noice log
+- Watch when edit code run last action
 
 ## install
 

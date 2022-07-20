@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/eiannone/keyboard"
+	"github.com/ymzuiku/fswatch"
 	"github.com/ymzuiku/gojest/execx"
 	"github.com/ymzuiku/gojest/pwd"
 )
@@ -81,6 +82,10 @@ var runner = map[string]func(){
 
 var url string
 
+func fixWatchUrl(s string) []string {
+	return []string{strings.Replace(s, "...", "", 1)}
+}
+
 func Start() {
 	if len(os.Args) < 2 {
 		url = "./..."
@@ -88,7 +93,7 @@ func Start() {
 		url = os.Args[1]
 	}
 
-	var input string
+	var input = "f"
 
 	if err := keyboard.Open(); err != nil {
 		panic(err)
@@ -100,6 +105,14 @@ func Start() {
 	fmt.Println("Press ESC to quit")
 
 	runAll()
+	go func() {
+		fswatch.Watch(fixWatchUrl(url), func(_ string) {
+			if fn, ok := runner[input]; ok {
+				fn()
+			}
+		})
+	}()
+
 	for {
 		fmt.Println("\nPlease keydown: (a) All, (A) All no cache, (f) Focus first fail, (F) Focus first fail no cache, (q) Quit...")
 		char, key, err := keyboard.GetKey()
@@ -133,7 +146,8 @@ func runNoCacheAll() {
 func runFocus() {
 	execx.CallClear()
 	if lastFail == "" {
-		fmt.Println("Not have last fails")
+		fmt.Println("Not have last fails, run all")
+		runAll()
 		return
 	}
 	fmt.Println("Run last fails: " + lastFail)
@@ -150,6 +164,7 @@ func runNoCacheFocus() {
 	execx.CallClear()
 	if lastFail == "" {
 		fmt.Println("Not have last fails")
+		runAll()
 		return
 	}
 	fmt.Println("Run last fails no cache: " + lastFail)
