@@ -44,14 +44,8 @@ func filter(line string) string {
 		if strings.Contains(v, "Error Trace:") {
 			lastLine = v
 		}
-		// if lastItFail == "" && itFailReg.MatchString(v) {
-		// 	arr := strings.Split(v, pwd.Pwd())
-		// 	if len(arr) == 2 {
-		// 		path := strings.Split(arr[1], ".go:")[0]
-		// 		lastItFail = "." + strings.Trim(path, " ") + ".go"
-		// 	}
-		// }
-		if strings.Contains(v, "ok   ") || strings.Contains(v, "(cached)") || strings.Contains(v, "[no test files]") || strings.Contains(v, "[no tests to run]") || onlyFailReg.MatchString(v) || isonlyPath(v) {
+
+		if strings.Contains(v, "ok  ") || strings.Contains(v, "(cached)") || strings.Contains(v, "[no test files]") || strings.Contains(v, "[no tests to run]") || onlyFailReg.MatchString(v) || isonlyPath(v) {
 			continue
 		}
 		if failReg.MatchString(v) {
@@ -69,7 +63,7 @@ func filter(line string) string {
 	if len(nextLine) == 0 {
 		return "-"
 	}
-	return strings.Join(nextLine, "\n")
+	return strings.Join(nextLine, "\n") + "\n"
 }
 
 var runner = map[string]func(){
@@ -78,22 +72,25 @@ var runner = map[string]func(){
 	"f": runFocus,
 	"F": runNoCacheFocus,
 	"q": runQuit,
+	"h": runHelp,
 }
 
 var url string
+var isWatch bool
 
 func fixWatchUrl(s string) []string {
 	return []string{strings.Replace(s, "...", "", 1)}
 }
 
+var input = "a"
+
 func Start() {
 	if len(os.Args) < 2 {
-		url = "./..."
-	} else {
-		url = os.Args[1]
+		fmt.Println("gojest need input path, like: ./...")
+		os.Exit(1)
 	}
 
-	var input = "f"
+	url = os.Args[1]
 
 	if err := keyboard.Open(); err != nil {
 		panic(err)
@@ -105,16 +102,25 @@ func Start() {
 	fmt.Println("Press ESC to quit")
 
 	runAll()
-	go func() {
-		fswatch.Watch(fixWatchUrl(url), func(_ string) {
-			if fn, ok := runner[input]; ok {
-				fn()
-			}
-		})
-	}()
+	for _, arg := range os.Args {
+		if arg == "-w" {
+			isWatch = true
+		}
+	}
+
+	if isWatch {
+		go func() {
+			fswatch.Watch(fixWatchUrl(url), func(_ string) {
+				if fn, ok := runner[input]; ok {
+					fn()
+					printTip()
+				}
+			})
+		}()
+	}
 
 	for {
-		fmt.Println("\nPlease keydown: (a) All, (A) All no cache, (f) Focus first fail, (F) Focus first fail no cache, (q) Quit...")
+		printTip()
 		char, key, err := keyboard.GetKey()
 
 		if err != nil {
@@ -129,11 +135,18 @@ func Start() {
 	}
 }
 
+func afterRun() {
+	if lastFail == "" {
+		fmt.Println("\n== Pass")
+	}
+}
+
 func runAll() {
-	lastFail = ""
 	execx.CallClear()
+	lastFail = ""
 	fmt.Println("Run all:")
 	execx.Run(context.Background(), filter, "go", "test", url)
+	afterRun()
 }
 
 func runNoCacheAll() {
@@ -141,6 +154,7 @@ func runNoCacheAll() {
 	execx.CallClear()
 	fmt.Println("Run all no use cache:")
 	execx.Run(context.Background(), filter, "go", "test", url, "-count=1")
+	afterRun()
 }
 
 func runFocus() {
@@ -154,10 +168,10 @@ func runFocus() {
 	if lastFailPath == "" {
 		execx.Run(context.Background(), filter, "go", "test", url, "-test.run", lastFail)
 	} else {
-		fmt.Println("fail in path: " + lastFailPath)
+		fmt.Println("run in file: " + lastFailPath)
 		execx.Run(context.Background(), filter, "go", "test", lastFailPath, "-test.run", lastFail)
 	}
-
+	afterRun()
 }
 
 func runNoCacheFocus() {
@@ -174,9 +188,30 @@ func runNoCacheFocus() {
 		fmt.Println("fail in path: " + lastFailPath)
 		execx.Run(context.Background(), filter, "go", "test", lastFailPath, "-count=1", "-test.run", lastFail)
 	}
+	afterRun()
 }
 
 func runQuit() {
 	fmt.Println("Bye.")
 	os.Exit(0)
+}
+
+func runHelp() {
+	fmt.Println("\nPlease keydown:")
+	fmt.Println("Run all test: (a)")
+	fmt.Println("Run all test and no cache: (shift+a)")
+	fmt.Println("Run first fail: (f)")
+	fmt.Println("Run first fail and no cache: (shift+f)")
+	fmt.Println("View helps: (f)")
+	fmt.Println("Quit: (q)")
+}
+
+func printTip() {
+	str := fmt.Sprintf("\nNow action: (%s); Please keydown: (a) All, (f) Focus first fail, (h) Helps, (q) Quit", input)
+
+	if isWatch {
+		fmt.Println(str + ", Watching...")
+	} else {
+		fmt.Println(str + "...")
+	}
 }

@@ -24,13 +24,13 @@ func asyncLog(reader io.ReadCloser, filter filterFn) {
 			line := strings.Join(s[:len(s)-1], "\n") //取出整行的日志
 			if filter != nil {
 				line = filter(line)
-			}
-			if line == "." || line == "-" {
-				fmt.Printf("%s%s", cache, line)
-			} else if line != "" {
-				fmt.Printf("%s%s\n", cache, line)
+				if line != "" {
+					fmt.Printf("%s%s", cache, line)
+				} else {
+					fmt.Printf("%s", cache)
+				}
 			} else {
-				fmt.Printf("%s", cache)
+				fmt.Printf("%s%s\n", cache, line)
 			}
 			cache = s[len(s)-1]
 		}

@@ -21,25 +21,33 @@ $ go install github.com/ymzuiku/gojest@latest
 
 ## use
 
-In your project run:
+**In your project run**
+
+run all:
 
 ```sh
-# run all
-gojest
+gojest ./...
 ```
 
+Run sub dir:
+
 ```sh
-# run sub dir
-gojest ./dir
+gojest ./dir/...
+```
+
+Auto run last action when your edit code:
+
+```sh
+gojest ./... -w
 ```
 
 And when your keydown:
 
 - Test all: `a`
-- Test all no cache: `A`
 - Focus test first fail: `f`
-- Focus test first fail no cache: `F`
 - Quit: `q`
+- Test all no cache: `shift+a`
+- Focus test first fail no cache: `shift+f`
 
 ## other
 
