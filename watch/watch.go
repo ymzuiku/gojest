@@ -88,7 +88,7 @@ var input = "a"
 
 func Start() {
 	if len(os.Args) < 2 {
-		fmt.Println("gojest need input path, like: ./...")
+		fmt.Println("\nerror, gojest need input path, like: ./...")
 		os.Exit(1)
 	}
 
@@ -144,9 +144,9 @@ func beforeRun() {
 
 func afterRun() {
 	if lastFail == "" {
-		fmt.Printf("\n== PASS all: %d", passNum)
+		fmt.Printf("\n--- PASS all: %d", passNum)
 	} else {
-		fmt.Printf("\n== PASS: %d", passNum)
+		fmt.Printf("\n--- PASS: %d", passNum)
 	}
 }
 
