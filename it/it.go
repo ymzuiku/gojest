@@ -15,12 +15,15 @@ import (
 */
 
 var fails = 0
+var UseFailNow = false
 
 func fail(t *testing.T) {
 	stack.Debug = true
 	fails += 1
 	t.Logf("Faile:%d %s", fails, stack.Red(stack.FileLine(3)))
-	// t.FailNow()
+	if UseFailNow {
+		t.FailNow()
+	}
 }
 
 func Equal(t *testing.T, a, b any) {

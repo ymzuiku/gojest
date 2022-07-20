@@ -50,8 +50,9 @@ func filter(line string) string {
 
 var runner = map[string]func(){
 	"a": runAll,
+	"A": runNoCacheAll,
 	"f": runFocus,
-	"c": runNoCacheAll,
+	"F": runNoCacheFocus,
 	"q": runQuit,
 }
 
@@ -69,19 +70,17 @@ func Start() {
 
 	runAll()
 	for {
-		fmt.Println("\nPlease keydown: (a) All, (f) Focus first fail, (c) Clear cache all, (q) Quit...")
+		fmt.Println("\nPlease keydown: (a) All, (A) Clear cache all, (f) Focus first fail, (F) Focus first fail, (q) Quit...")
 		char, key, err := keyboard.GetKey()
 
 		if err != nil {
 			panic(err)
 		}
-		if key == keyboard.KeyCtrlC {
-			runQuit()
-		}
 		input = string(char)
-		// fmt.Scan(&input)
 		if fn, ok := runner[input]; ok {
 			fn()
+		} else if key == keyboard.KeyCtrlC {
+			runQuit()
 		}
 	}
 }
@@ -89,25 +88,35 @@ func Start() {
 func runAll() {
 	lastFail = ""
 	execx.CallClear()
-	fmt.Println("run all ...")
+	fmt.Println("Run all ...")
 	execx.Run(context.Background(), filter, "go", "test", "./...")
 }
 
 func runNoCacheAll() {
 	lastFail = ""
 	execx.CallClear()
-	fmt.Println("run all no use cache ...")
+	fmt.Println("Run all no use cache ...")
 	execx.Run(context.Background(), filter, "go", "test", "./...", "-count=1")
 }
 
 func runFocus() {
 	execx.CallClear()
 	if lastFail == "" {
-		fmt.Println("not have last fails")
+		fmt.Println("Not have last fails")
 		return
 	}
-	fmt.Println("run last fails: " + lastFail + " ...")
+	fmt.Println("Run last fails: " + lastFail + " ...")
 	execx.Run(context.Background(), filter, "go", "test", "./...", "-test.run", lastFail)
+}
+
+func runNoCacheFocus() {
+	execx.CallClear()
+	if lastFail == "" {
+		fmt.Println("Not have last fails")
+		return
+	}
+	fmt.Println("Run last fails no cache: " + lastFail + " ...")
+	execx.Run(context.Background(), filter, "go", "test", "./...", "-count=1", "-test.run", lastFail)
 }
 
 func runQuit() {

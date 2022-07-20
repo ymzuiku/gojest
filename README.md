@@ -23,8 +23,9 @@ gojest
 And when your keydown:
 
 - Test all: `a`
+- Test all no cache: `A`
 - Focus test first fail: `f`
-- Test all and not use cache: `c`
+- Focus test first fail no cache: `F`
 - Quit: `q`
 
 ## other

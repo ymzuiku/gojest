@@ -17,7 +17,7 @@ func TestGojest(t *testing.T) {
 	})
 
 	t.Run("error 3", func(t *testing.T) {
-		it.Equal(t, 120, 3)
+		it.Equal(t, 3, 3)
 	})
 
 	t.Run("error 4", func(t *testing.T) {
