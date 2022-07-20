@@ -20,7 +20,7 @@ var UseFailNow = false
 func fail(t *testing.T) {
 	stack.Debug = true
 	fails += 1
-	t.Logf("it-faile:%d %s", fails, stack.Red(stack.FileLine(3)))
+	t.Logf("Fail:%d %s", fails, stack.Red(stack.FileLine(3)))
 	if UseFailNow {
 		t.FailNow()
 	}
