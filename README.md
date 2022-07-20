@@ -1,6 +1,6 @@
 # gojest
 
-gojest is like jest(nodejs) in golang.
+Press the `F` key to focus on your first error, gojest is like jest(nodejs) in golang.
 
 This gif is focus test first fail on keydown `f`:
 
