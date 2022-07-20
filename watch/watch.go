@@ -69,7 +69,7 @@ func Start() {
 
 	runAll()
 	for {
-		fmt.Println("\nPlease keydown: All(a), Focus first fail(f), Clear cache all(c), Quit(q)...")
+		fmt.Println("\nPlease keydown: (a) All, (f) Focus first fail, (c) Clear cache all, (q) Quit...")
 		char, key, err := keyboard.GetKey()
 
 		if err != nil {
