@@ -12,7 +12,7 @@ import (
 var Debug = false
 
 func parseFile(file string) string {
-	return strings.Replace(file, pwd.Load(), ".", 1)
+	return strings.Replace(file, pwd.Pwd(), ".", 1)
 }
 
 func New(err error) error {

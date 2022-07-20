@@ -15,6 +15,11 @@ func clearLinux() {
 		cmd.Run()
 	}
 	{
+		cmd := exec.Command(`reset`)
+		cmd.Stdout = os.Stdout
+		cmd.Run()
+	}
+	{
 		cmd := exec.Command(`clear`)
 		cmd.Stdout = os.Stdout
 		cmd.Run()

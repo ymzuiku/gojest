@@ -25,7 +25,9 @@ func asyncLog(reader io.ReadCloser, filter filterFn) {
 			if filter != nil {
 				line = filter(line)
 			}
-			if line != "" {
+			if line == "." || line == "-" {
+				fmt.Printf("%s%s", cache, line)
+			} else if line != "" {
 				fmt.Printf("%s%s\n", cache, line)
 			} else {
 				fmt.Printf("%s", cache)

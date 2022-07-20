@@ -14,24 +14,42 @@ import (
 
 var failReg = regexp.MustCompile(`--- FAIL`)
 var onlyFailReg = regexp.MustCompile(`^FAIL`)
-
 var fnReg = regexp.MustCompile(`--- FAIL: (.*?) \(`)
-
 var lastFail = ""
+var lastFailPath = ""
 
 // 是否整行都只是路径
 func isonlyPath(v string) bool {
-	return strings.Contains(v, pwd.Load()) && !strings.Contains(strings.Replace(v, pwd.Load(), "", 1), " ")
+	return strings.Contains(v, pwd.Pwd()) && !strings.Contains(strings.Replace(v, pwd.Pwd(), "", 1), " ")
 }
 
-func replacePwd(v string) string {
-	return strings.ReplaceAll(v, pwd.Load(), ".")
-}
+var lastLine = ""
 
 func filter(line string) string {
+	// defer func() {
+	// 	lastFail = line
+	// }()
 	list := strings.Split(line, "\n")
 	nextLine := []string{}
 	for _, v := range list {
+		if lastLine != "" {
+			lastLine = ""
+			arr := strings.Split(v, pwd.Pwd())
+			if len(arr) == 2 {
+				path := strings.Split(arr[1], ".go:")[0]
+				lastFailPath = "." + strings.Trim(path, " ") + ".go"
+			}
+		}
+		if strings.Contains(v, "Error Trace:") {
+			lastLine = v
+		}
+		// if lastItFail == "" && itFailReg.MatchString(v) {
+		// 	arr := strings.Split(v, pwd.Pwd())
+		// 	if len(arr) == 2 {
+		// 		path := strings.Split(arr[1], ".go:")[0]
+		// 		lastItFail = "." + strings.Trim(path, " ") + ".go"
+		// 	}
+		// }
 		if strings.Contains(v, "ok   ") || strings.Contains(v, "(cached)") || strings.Contains(v, "[no test files]") || strings.Contains(v, "[no tests to run]") || onlyFailReg.MatchString(v) || isonlyPath(v) {
 			continue
 		}
@@ -39,13 +57,17 @@ func filter(line string) string {
 			name := fnReg.FindStringSubmatch(v)[1]
 			if lastFail == "" {
 				lastFail = name
+				lastFailPath = ""
 			} else if strings.Contains(name, lastFail+"/") {
 				lastFail = name
+				lastFailPath = ""
 			}
 		}
-		nextLine = append(nextLine, replacePwd(v))
+		nextLine = append(nextLine, pwd.ReplacePwd(v))
 	}
-
+	if len(nextLine) == 0 {
+		return "-"
+	}
 	return strings.Join(nextLine, "\n")
 }
 
@@ -89,14 +111,14 @@ func Start() {
 func runAll() {
 	lastFail = ""
 	execx.CallClear()
-	fmt.Println("Run all ...")
+	fmt.Println("Run all:")
 	execx.Run(context.Background(), filter, "go", "test", "./...")
 }
 
 func runNoCacheAll() {
 	lastFail = ""
 	execx.CallClear()
-	fmt.Println("Run all no use cache ...")
+	fmt.Println("Run all no use cache:")
 	execx.Run(context.Background(), filter, "go", "test", "./...", "-count=1")
 }
 
@@ -106,8 +128,14 @@ func runFocus() {
 		fmt.Println("Not have last fails")
 		return
 	}
-	fmt.Println("Run last fails: " + lastFail + " ...")
-	execx.Run(context.Background(), filter, "go", "test", "./...", "-test.run", lastFail)
+	fmt.Println("Run last fails: " + lastFail)
+	if lastFailPath == "" {
+		execx.Run(context.Background(), filter, "go", "test", "./...", "-test.run", lastFail)
+	} else {
+		fmt.Println("fail in path: " + lastFailPath)
+		execx.Run(context.Background(), filter, "go", "test", lastFailPath, "-test.run", lastFail)
+	}
+
 }
 
 func runNoCacheFocus() {
@@ -116,11 +144,16 @@ func runNoCacheFocus() {
 		fmt.Println("Not have last fails")
 		return
 	}
-	fmt.Println("Run last fails no cache: " + lastFail + " ...")
-	execx.Run(context.Background(), filter, "go", "test", "./...", "-count=1", "-test.run", lastFail)
+	fmt.Println("Run last fails no cache: " + lastFail)
+	if lastFailPath == "" {
+		execx.Run(context.Background(), filter, "go", "test", "./...", "-count=1", "-test.run", lastFail)
+	} else {
+		fmt.Println("fail in path: " + lastFailPath)
+		execx.Run(context.Background(), filter, "go", "test", lastFailPath, "-count=1", "-test.run", lastFail)
+	}
 }
 
 func runQuit() {
-	fmt.Println("bye.")
+	fmt.Println("Bye.")
 	os.Exit(0)
 }
