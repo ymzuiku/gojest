@@ -1,5 +1,7 @@
 # gojest
 
+[中文文档](./README_cn.md)
+
 Press the `f` key to focus on your first error, gojest is like jest(nodejs) in golang.
 
 This gif is focus test first fail on keydown `f`:
@@ -45,9 +47,10 @@ And when your keydown:
 
 - Test all: `a`
 - Focus test first fail: `f`
-- Quit: `q`
 - Test all no cache: `shift+a`
 - Focus test first fail no cache: `shift+f`
+- Helps: `h`
+- Quit: `q`
 
 ## other
 
