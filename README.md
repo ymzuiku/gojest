@@ -2,7 +2,7 @@
 
 gojest is like jest(nodejs) in golang.
 
-This gif is retest first fail on keydown `f`:
+This gif is test first fail on keydown `f`:
 
 ![](./gojest.gif)
 
