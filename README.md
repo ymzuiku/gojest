@@ -23,7 +23,13 @@ $ go install github.com/ymzuiku/gojest@latest
 In your project run:
 
 ```sh
+# run all
 gojest
+```
+
+```sh
+# run sub dir
+gojest ./dir
 ```
 
 And when your keydown:

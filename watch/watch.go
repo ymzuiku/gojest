@@ -79,7 +79,15 @@ var runner = map[string]func(){
 	"q": runQuit,
 }
 
+var url string
+
 func Start() {
+	if len(os.Args) < 2 {
+		url = "./..."
+	} else {
+		url = os.Args[1]
+	}
+
 	var input string
 
 	if err := keyboard.Open(); err != nil {
@@ -112,14 +120,14 @@ func runAll() {
 	lastFail = ""
 	execx.CallClear()
 	fmt.Println("Run all:")
-	execx.Run(context.Background(), filter, "go", "test", "./...")
+	execx.Run(context.Background(), filter, "go", "test", url)
 }
 
 func runNoCacheAll() {
 	lastFail = ""
 	execx.CallClear()
 	fmt.Println("Run all no use cache:")
-	execx.Run(context.Background(), filter, "go", "test", "./...", "-count=1")
+	execx.Run(context.Background(), filter, "go", "test", url, "-count=1")
 }
 
 func runFocus() {
@@ -130,7 +138,7 @@ func runFocus() {
 	}
 	fmt.Println("Run last fails: " + lastFail)
 	if lastFailPath == "" {
-		execx.Run(context.Background(), filter, "go", "test", "./...", "-test.run", lastFail)
+		execx.Run(context.Background(), filter, "go", "test", url, "-test.run", lastFail)
 	} else {
 		fmt.Println("fail in path: " + lastFailPath)
 		execx.Run(context.Background(), filter, "go", "test", lastFailPath, "-test.run", lastFail)
@@ -146,7 +154,7 @@ func runNoCacheFocus() {
 	}
 	fmt.Println("Run last fails no cache: " + lastFail)
 	if lastFailPath == "" {
-		execx.Run(context.Background(), filter, "go", "test", "./...", "-count=1", "-test.run", lastFail)
+		execx.Run(context.Background(), filter, "go", "test", url, "-count=1", "-test.run", lastFail)
 	} else {
 		fmt.Println("fail in path: " + lastFailPath)
 		execx.Run(context.Background(), filter, "go", "test", lastFailPath, "-count=1", "-test.run", lastFail)
