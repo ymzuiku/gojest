@@ -6,6 +6,12 @@ This gif is focus test first fail on keydown `f`:
 
 ![](./gojest.gif)
 
+## feature
+
+- Interactive CLI
+- Keep your test behavior, Just use `go test ./...`
+- Remove noice log
+
 ## install
 
 ```sh
