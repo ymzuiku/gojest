@@ -65,7 +65,7 @@ func filter(line string) string {
 	if len(nextLine) == 0 {
 		return "-"
 	}
-	return strings.Join(nextLine, "\n")
+	return strings.Join(nextLine, "\n") + "\n"
 }
 
 var runner = map[string]func(){
