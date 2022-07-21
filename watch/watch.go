@@ -38,7 +38,9 @@ func filter(line string) string {
 			arr := strings.Split(v, pwd.Pwd())
 			if len(arr) == 2 {
 				path := strings.Split(arr[1], ".go:")[0]
-				lastFailPath = "." + strings.Trim(path, " ") + ".go"
+				lastFailPath = "." + strings.Trim(path, " ")
+				list := strings.Split(lastFailPath, "/")
+				lastFailPath = strings.Join(list[:len(list)-1], "/")
 			}
 		}
 		if strings.Contains(v, "Error Trace:") {
@@ -53,12 +55,10 @@ func filter(line string) string {
 		if failReg.MatchString(v) {
 			name := fnReg.FindStringSubmatch(v)[1]
 			if lastFail == "" {
-				lastFail = name
-				lastFailPath = ""
-			} else if strings.Contains(name, lastFail+"/") {
-				lastFail = name
+				lastFail = "^" + name + "$"
 				lastFailPath = ""
 			}
+
 		}
 		nextLine = append(nextLine, pwd.ReplacePwd(v))
 	}
@@ -175,10 +175,10 @@ func runFocus() {
 	}
 	fmt.Println("Run last fails: " + lastFail)
 	if lastFailPath == "" {
-		execx.Run(context.Background(), filter, "go", "test", url, "-test.run", lastFail)
+		execx.Run(context.Background(), filter, "go", "test", url, "-test.run", lastFail, "-timeout", "30s")
 	} else {
 		fmt.Println("run in file: " + lastFailPath)
-		execx.Run(context.Background(), filter, "go", "test", lastFailPath, "-test.run", lastFail)
+		execx.Run(context.Background(), filter, "go", "test", lastFailPath, "-test.run", lastFail, "-timeout", "30s")
 	}
 	afterRun()
 }
@@ -192,10 +192,10 @@ func runNoCacheFocus() {
 	}
 	fmt.Println("Run last fails no cache: " + lastFail)
 	if lastFailPath == "" {
-		execx.Run(context.Background(), filter, "go", "test", url, "-count=1", "-test.run", lastFail)
+		execx.Run(context.Background(), filter, "go", "test", url, "-count=1", "-test.run", lastFail, "-timeout", "30s")
 	} else {
 		fmt.Println("fail in path: " + lastFailPath)
-		execx.Run(context.Background(), filter, "go", "test", lastFailPath, "-count=1", "-test.run", lastFail)
+		execx.Run(context.Background(), filter, "go", "test", lastFailPath, "-count=1", "-test.run", lastFail, "-timeout", "30s")
 	}
 	afterRun()
 }

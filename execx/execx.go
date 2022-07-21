@@ -38,6 +38,7 @@ func asyncLog(reader io.ReadCloser, filter filterFn) {
 }
 
 func Run(ctx context.Context, filter filterFn, args ...string) error {
+	fmt.Println(strings.Join(args, " "))
 	cmd := exec.CommandContext(ctx, args[0], args[1:]...)
 
 	stdout, _ := cmd.StdoutPipe()
