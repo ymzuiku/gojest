@@ -79,6 +79,12 @@ func Empty(t *testing.T, a any) {
 	}
 }
 
+func NotEmpty(t *testing.T, a any) {
+	if !assert.NotEmpty(t, a) {
+		fail(t)
+	}
+}
+
 func EqualError(t *testing.T, a error, errString string) {
 	if !assert.EqualError(t, a, errString) {
 		fail(t)
