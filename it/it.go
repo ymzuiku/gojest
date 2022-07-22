@@ -7,23 +7,20 @@ import (
 	"github.com/ymzuiku/gojest/stack"
 )
 
-/*
-更便于开发断言
-
-1. 约定不要有多余的message参数
-2. 会使用stack包裹, 高亮显示, 方便定位
-*/
-
-var fails = 0
 var UseFailNow = false
+var fails = 0
 
-func fail(t *testing.T) {
+var OnFail = func(t *testing.T) {
 	stack.Debug = true
 	fails += 1
-	t.Logf("Fail:%d %s", fails, stack.Red(stack.FileLine(3)))
+	t.Logf("Fail:%d %s", fails, stack.Red(stack.FileLine(4)))
 	if UseFailNow {
 		t.FailNow()
 	}
+}
+
+func fail(t *testing.T) {
+	OnFail(t)
 }
 
 func Equal(t *testing.T, a, b any) {
