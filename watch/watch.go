@@ -43,7 +43,7 @@ func filter(line string) string {
 				lastFailPath = strings.Join(list[:len(list)-1], "/")
 			}
 		}
-		if strings.Contains(v, "Error Trace:") {
+		if lastFailPath == "" && strings.Contains(v, "Error Trace:") {
 			lastLine = v
 		}
 		if passReg.MatchString(v) {
@@ -153,6 +153,7 @@ func afterRun() {
 func runAll() {
 	beforeRun()
 	lastFail = ""
+	lastFailPath = ""
 	fmt.Println("Run all:")
 	execx.Run(context.Background(), filter, "go", "test", url)
 	afterRun()
