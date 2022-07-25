@@ -162,6 +162,7 @@ func runAll() {
 func runNoCacheAll() {
 	beforeRun()
 	lastFail = ""
+	lastFailPath = ""
 	fmt.Println("Run all no use cache:")
 	execx.Run(context.Background(), filter, "go", "test", url, "-count=1")
 	afterRun()
