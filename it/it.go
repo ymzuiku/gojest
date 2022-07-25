@@ -8,12 +8,9 @@ import (
 )
 
 var UseFailNow = false
-var fails = 0
 
 var OnFail = func(t *testing.T) {
 	stack.Debug = true
-	fails += 1
-	t.Logf("Fail:%d %s", fails, stack.Red(stack.FileLine(4)))
 	if UseFailNow {
 		t.FailNow()
 	}

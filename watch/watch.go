@@ -27,6 +27,7 @@ func isonlyPath(v string) bool {
 
 var lastLine = ""
 var passNum = 0
+var failNum = 0
 
 func filter(line string) string {
 
@@ -53,6 +54,7 @@ func filter(line string) string {
 			continue
 		}
 		if failReg.MatchString(v) {
+			failNum += 1
 			name := fnReg.FindStringSubmatch(v)[1]
 			if lastFail == "" {
 				lastFail = "^" + name + "$"
@@ -139,14 +141,15 @@ func Start() {
 
 func beforeRun() {
 	passNum = 0
+	failNum = 0
 	execx.CallClear()
 }
 
 func afterRun() {
 	if lastFail == "" {
-		fmt.Printf("\n--- PASS all: %d", passNum)
+		fmt.Printf("\n--- PASS all: %d,  FAIL: %d", passNum, failNum)
 	} else {
-		fmt.Printf("\n--- PASS: %d", passNum)
+		fmt.Printf("\n--- PASS: %d,  FAIL: %d", passNum, failNum)
 	}
 }
 

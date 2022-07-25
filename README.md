@@ -51,7 +51,3 @@ And when your keydown:
 - Focus test first fail no cache: `shift+f`
 - Helps: `h`
 - Quit: `q`
-
-## other
-
-[If you need log red path](./README_it.md)
