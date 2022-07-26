@@ -13,6 +13,7 @@ import (
 	"github.com/ymzuiku/gojest/pwd"
 )
 
+var testGoReg = regexp.MustCompile(`(\.|_)test\.go`)
 var passReg = regexp.MustCompile(`^ok `)
 var failReg = regexp.MustCompile(`--- FAIL`)
 var onlyFailReg = regexp.MustCompile(`^FAIL`)
@@ -25,7 +26,7 @@ func isonlyPath(v string) bool {
 	return strings.Contains(v, pwd.Pwd()) && !strings.Contains(strings.Replace(v, pwd.Pwd(), "", 1), " ")
 }
 
-var lastLine = ""
+// var lastLine = ""
 var passNum = 0
 var failNum = 0
 
@@ -34,8 +35,7 @@ func filter(line string) string {
 	list := strings.Split(line, "\n")
 	nextLine := []string{}
 	for _, v := range list {
-		if lastLine != "" {
-			lastLine = ""
+		if lastFail != "" && lastFailPath == "" && testGoReg.MatchString(v) {
 			arr := strings.Split(v, pwd.Pwd())
 			if len(arr) == 2 {
 				path := strings.Split(arr[1], ".go:")[0]
@@ -43,9 +43,6 @@ func filter(line string) string {
 				list := strings.Split(lastFailPath, "/")
 				lastFailPath = strings.Join(list[:len(list)-1], "/")
 			}
-		}
-		if lastFailPath == "" && strings.Contains(v, "Error Trace:") {
-			lastLine = v
 		}
 		if passReg.MatchString(v) {
 			passNum += 1

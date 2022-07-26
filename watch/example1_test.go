@@ -6,7 +6,7 @@ import (
 	"github.com/ymzuiku/gojest/it"
 )
 
-func TestGojest(t *testing.T) {
+func TestGojestExample1(t *testing.T) {
 
 	t.Run("error 1", func(t *testing.T) {
 		it.Equal(t, 1, 1)
