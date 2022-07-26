@@ -1,4 +1,4 @@
-v=v1.1.20
+v=v1.1.21
 git tag $v
 git push --tags
 go install github.com/ymzuiku/gojest@$v
