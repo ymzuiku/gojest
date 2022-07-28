@@ -67,6 +67,18 @@ func Contains(t *testing.T, a, contains any) {
 	}
 }
 
+func NotContains(t *testing.T, a, contains any) {
+	if !assert.NotContains(t, a, contains) {
+		fail(t)
+	}
+}
+
+func Len(t *testing.T, a any, length int) {
+	if !assert.Len(t, a, length) {
+		fail(t)
+	}
+}
+
 func Empty(t *testing.T, a any) {
 	if !assert.Empty(t, a) {
 		fail(t)
@@ -140,6 +152,30 @@ func Fail(t *testing.T, failureMessage string) {
 }
 func FileExists(t *testing.T, path string) {
 	if !assert.FileExists(t, path) {
+		fail(t)
+	}
+}
+
+func Less(t *testing.T, e1, e2 any) {
+	if !assert.Less(t, e1, e2) {
+		fail(t)
+	}
+}
+
+func LessOrEqual(t *testing.T, e1, e2 any) {
+	if !assert.LessOrEqual(t, e1, e2) {
+		fail(t)
+	}
+}
+
+func Greater(t *testing.T, e1, e2 any) {
+	if !assert.Greater(t, e1, e2) {
+		fail(t)
+	}
+}
+
+func GreaterOrEqual(t *testing.T, e1, e2 any) {
+	if !assert.GreaterOrEqual(t, e1, e2) {
 		fail(t)
 	}
 }
