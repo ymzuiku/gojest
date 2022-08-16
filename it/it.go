@@ -1,6 +1,7 @@
 package it
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -9,8 +10,21 @@ import (
 
 var UseFailNow = false
 
-var OnFail = func(t *testing.T) {
+func OnFailTrace(t *testing.T) {
 	stack.Debug = true
+	for i := 4; i < 99; i++ {
+		s := stack.FileLine(i)
+		if strings.Contains(s, "runtime.Caller out") {
+			break
+		}
+		t.Logf("Trace %+v", stack.Red(s))
+	}
+	if UseFailNow {
+		t.FailNow()
+	}
+}
+
+var OnFail = func(t *testing.T) {
 	if UseFailNow {
 		t.FailNow()
 	}
@@ -37,6 +51,7 @@ func True(t *testing.T, a bool) {
 		fail(t)
 	}
 }
+
 func False(t *testing.T, a bool) {
 	if !assert.False(t, a) {
 		fail(t)
@@ -150,6 +165,7 @@ func Fail(t *testing.T, failureMessage string) {
 		fail(t)
 	}
 }
+
 func FileExists(t *testing.T, path string) {
 	if !assert.FileExists(t, path) {
 		fail(t)

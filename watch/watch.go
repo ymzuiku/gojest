@@ -7,19 +7,22 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/eiannone/keyboard"
 	"github.com/ymzuiku/fswatch"
 	"github.com/ymzuiku/gojest/execx"
+	"github.com/ymzuiku/gojest/keyboard"
 	"github.com/ymzuiku/gojest/pwd"
 )
 
-var testGoReg = regexp.MustCompile(`(\.|_)test\.go`)
-var passReg = regexp.MustCompile(`^ok `)
-var failReg = regexp.MustCompile(`--- FAIL`)
-var onlyFailReg = regexp.MustCompile(`^FAIL`)
-var fnReg = regexp.MustCompile(`--- FAIL: (.*?) \(`)
-var lastFail = ""
-var lastFailPath = ""
+var (
+	testGoReg = regexp.MustCompile(`(\.|_)test\.go`)
+	// itGoReg      = regexp.MustCompile(`it\.go\:`)
+	passReg      = regexp.MustCompile(`^ok `)
+	failReg      = regexp.MustCompile(`--- FAIL`)
+	onlyFailReg  = regexp.MustCompile(`^FAIL`)
+	fnReg        = regexp.MustCompile(`--- FAIL: (.*?) \(`)
+	lastFail     = ""
+	lastFailPath = ""
+)
 
 // 是否整行都只是路径
 func isonlyPath(v string) bool {
@@ -31,7 +34,6 @@ var passNum = 0
 var failNum = 0
 
 func filter(line string) string {
-
 	list := strings.Split(line, "\n")
 	nextLine := []string{}
 	for _, v := range list {
@@ -57,9 +59,11 @@ func filter(line string) string {
 				lastFail = "^" + name + "$"
 				lastFailPath = ""
 			}
-
 		}
-		nextLine = append(nextLine, pwd.ReplacePwd(v))
+		if !strings.Contains(v, "Error Trace:") {
+			nextLine = append(nextLine, pwd.ReplacePwd(v))
+		}
+
 	}
 	if len(nextLine) == 0 {
 		return "-"
@@ -76,8 +80,10 @@ var runner = map[string]func(){
 	"h": runHelp,
 }
 
-var url string
-var isWatch bool
+var (
+	url     string
+	isWatch bool
+)
 
 func fixWatchUrl(s string) []string {
 	return []string{strings.Replace(s, "...", "", 1)}
@@ -123,7 +129,6 @@ func Start() {
 	for {
 		printTip()
 		char, key, err := keyboard.GetKey()
-
 		if err != nil {
 			panic(err)
 		}
