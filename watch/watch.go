@@ -119,7 +119,7 @@ func Start() {
 
 	if isWatch {
 		go func() {
-			fswatch.Watch(fixWatchUrl(url), func(_ string) {
+			fswatch.Watch(fixWatchUrl(url), []string{}, func(file string) {
 				if fn, ok := runner[input]; ok {
 					fn()
 					printTip()

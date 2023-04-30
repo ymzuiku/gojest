@@ -21,7 +21,7 @@ func asyncLog(reader io.ReadCloser, filter filterFn) {
 		if num > 0 {
 			b := buf[:num]
 			s := strings.Split(string(b), "\n")
-			line := strings.Join(s[:len(s)-1], "\n") //取出整行的日志
+			line := strings.Join(s[:len(s)-1], "\n") // 取出整行的日志
 			if filter != nil {
 				line = filter(line)
 				if line != "" {
@@ -58,4 +58,10 @@ func Run(ctx context.Context, filter filterFn, args ...string) error {
 	}
 
 	return nil
+}
+
+func RunEmit(ctx context.Context, filter filterFn, args ...string) {
+	if err := Run(ctx, filter, args...); err != nil {
+		fmt.Println(err)
+	}
 }
