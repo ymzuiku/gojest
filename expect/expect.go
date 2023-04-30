@@ -1,4 +1,4 @@
-package it
+package expect
 
 import (
 	"strings"

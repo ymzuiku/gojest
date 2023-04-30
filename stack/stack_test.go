@@ -2,10 +2,9 @@ package stack_test
 
 import (
 	"errors"
-
 	"testing"
 
-	"github.com/ymzuiku/gojest/it"
+	"github.com/ymzuiku/gojest/expect"
 	"github.com/ymzuiku/gojest/stack"
 )
 
@@ -21,7 +20,7 @@ func useErr2() error {
 
 func TestStack(t *testing.T) {
 	t.Run("", func(t *testing.T) {
-		it.ErrorIs(t, useErr2(), err1)
+		expect.ErrorIs(t, useErr2(), err1)
 	})
 }
 
@@ -31,6 +30,6 @@ func useErrNil() error {
 
 func TestStackNil(t *testing.T) {
 	t.Run("", func(t *testing.T) {
-		it.ErrorIs(t, useErrNil(), nil)
+		expect.ErrorIs(t, useErrNil(), nil)
 	})
 }
