@@ -8,7 +8,11 @@ import (
 	"github.com/ymzuiku/gojest/stack"
 )
 
-var UseFailNow = false
+var (
+	UseFailNow       = false
+	IgnoreTestingLog = true
+	IgnoreRuntimeLog = true
+)
 
 func OnFailTrace(t *testing.T) {
 	stack.Debug = true
@@ -17,6 +21,12 @@ func OnFailTrace(t *testing.T) {
 		if strings.Contains(s, "runtime.Caller out") {
 			break
 		}
+		if IgnoreRuntimeLog && strings.Contains(s, "go/src/runtime/") {
+			continue
+		}
+		if IgnoreTestingLog && strings.Contains(s, "testing.go:") {
+			continue
+		}
 		t.Logf("Trace %+v", stack.Red(s))
 	}
 	if UseFailNow {
@@ -24,14 +34,14 @@ func OnFailTrace(t *testing.T) {
 	}
 }
 
-var OnFail = func(t *testing.T) {
-	if UseFailNow {
-		t.FailNow()
-	}
-}
+// var OnFail = func(t *testing.T) {
+// 	if UseFailNow {
+// 		t.FailNow()
+// 	}
+// }
 
 func fail(t *testing.T) {
-	OnFail(t)
+	OnFailTrace(t)
 }
 
 func Equal(t *testing.T, a, b any) {

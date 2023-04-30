@@ -56,7 +56,7 @@ func FileLine(caller int) string {
 		return "runtime.Caller out"
 	}
 
-	return fmt.Sprintf("%s:%d", parseFile(file), line)
+	return fmt.Sprintf("error: %s:%d", parseFile(file), line)
 }
 
 func Red(str string) string {

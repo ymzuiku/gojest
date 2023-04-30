@@ -30,8 +30,10 @@ func isonlyPath(v string) bool {
 }
 
 // var lastLine = ""
-var passNum = 0
-var failNum = 0
+var (
+	passNum = 0
+	failNum = 0
+)
 
 func filter(line string) string {
 	list := strings.Split(line, "\n")
