@@ -1,5 +1,9 @@
 # gojest
 
+Like Nodejs's jest in golang.
+
+Reduced a lot of log noise, only keeping the logs that the author considers necessary for debugging during the testing process.
+
 [中文文档](./README_cn.md)
 
 Press the `f` key to focus on your first error, gojest is like jest(nodejs) in golang.
