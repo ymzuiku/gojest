@@ -43,9 +43,9 @@ func NewCaller(err error, caller int) error {
 	return fmt.Errorf("%s:%d %w", parseFile(file), line, err)
 }
 
-func Log(err error) {
-	// err.(errorx.Error).PrintStackTrace()
-}
+// func Log(err error) {
+// 	// err.(errorx.Error).PrintStackTrace()
+// }
 
 func FileLine(caller int) string {
 	if !Debug {
@@ -60,5 +60,5 @@ func FileLine(caller int) string {
 }
 
 func Red(str string) string {
-	return fmt.Sprintf("\033[0;37;41m%s\033[0m", str)
+	return fmt.Sprintf("\033[31m%s\033[0m", str)
 }
