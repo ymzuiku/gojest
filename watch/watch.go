@@ -11,6 +11,7 @@ import (
 	"github.com/ymzuiku/gojest/execx"
 	"github.com/ymzuiku/gojest/keyboard"
 	"github.com/ymzuiku/gojest/pwd"
+	"github.com/ymzuiku/gojest/stack"
 )
 
 var (
@@ -31,14 +32,22 @@ func isonlyPath(v string) bool {
 
 // var lastLine = ""
 var (
-	passNum = 0
-	failNum = 0
+	passNum          = 0
+	failNum          = 0
+	IgnoreTestingLog = true
+	IgnoreRuntimeLog = true
 )
 
 func filter(line string) string {
 	list := strings.Split(line, "\n")
 	nextLine := []string{}
 	for _, v := range list {
+		if IgnoreRuntimeLog && strings.Contains(v, "go/src/runtime/") {
+			continue
+		}
+		if IgnoreTestingLog && strings.Contains(v, "src/testing/testing.go:") {
+			continue
+		}
 		if lastFail != "" && lastFailPath == "" && testGoReg.MatchString(v) {
 			arr := strings.Split(v, pwd.Pwd())
 			if len(arr) == 2 {
@@ -62,8 +71,19 @@ func filter(line string) string {
 				lastFailPath = ""
 			}
 		}
-		if !strings.Contains(v, "Error Trace:") {
-			nextLine = append(nextLine, pwd.ReplacePwd(v))
+		if !strings.Contains(v, "Error Trace:") && v != "" && v != "\n" {
+			if strings.Contains(v, ".go:") {
+
+				text := pwd.ReplacePwd(v)
+				text = regexp.MustCompile(`expect\.go:\d{1,4}(?::\d{1,4})?:`).ReplaceAllString(text, "")
+				text = strings.ReplaceAll(text, "\n", "  ")
+				text = strings.ReplaceAll(text, "\t", "  ")
+				text = strings.Trim(text, " ")
+				text = strings.ReplaceAll(text, "  ", "")
+				nextLine = append(nextLine, stack.Red(text))
+			} else {
+				nextLine = append(nextLine, pwd.ReplacePwd(v))
+			}
 		}
 
 	}
@@ -162,7 +182,7 @@ func runAll() {
 	lastFail = ""
 	lastFailPath = ""
 	fmt.Println("Run all:")
-	execx.Run(context.Background(), filter, "go", "test", url)
+	_ = execx.Run(context.Background(), filter, "go", "test", url)
 	afterRun()
 }
 
@@ -171,7 +191,7 @@ func runNoCacheAll() {
 	lastFail = ""
 	lastFailPath = ""
 	fmt.Println("Run all no use cache:")
-	execx.Run(context.Background(), filter, "go", "test", url, "-count=1")
+	_ = execx.Run(context.Background(), filter, "go", "test", url, "-count=1")
 	afterRun()
 }
 
@@ -184,10 +204,10 @@ func runFocus() {
 	}
 	fmt.Println("Run last fails: " + lastFail)
 	if lastFailPath == "" {
-		execx.Run(context.Background(), filter, "go", "test", url, "-test.run", lastFail, "-timeout", "30s")
+		_ = execx.Run(context.Background(), filter, "go", "test", url, "-test.run", lastFail, "-timeout", "30s")
 	} else {
 		fmt.Println("run in file: " + lastFailPath)
-		execx.Run(context.Background(), filter, "go", "test", lastFailPath, "-test.run", lastFail, "-timeout", "30s")
+		_ = execx.Run(context.Background(), filter, "go", "test", lastFailPath, "-test.run", lastFail, "-timeout", "30s")
 	}
 	afterRun()
 }
@@ -201,10 +221,10 @@ func runNoCacheFocus() {
 	}
 	fmt.Println("Run last fails no cache: " + lastFail)
 	if lastFailPath == "" {
-		execx.Run(context.Background(), filter, "go", "test", url, "-count=1", "-test.run", lastFail, "-timeout", "30s")
+		_ = execx.Run(context.Background(), filter, "go", "test", url, "-count=1", "-test.run", lastFail, "-timeout", "30s")
 	} else {
 		fmt.Println("fail in path: " + lastFailPath)
-		execx.Run(context.Background(), filter, "go", "test", lastFailPath, "-count=1", "-test.run", lastFail, "-timeout", "30s")
+		_ = execx.Run(context.Background(), filter, "go", "test", lastFailPath, "-count=1", "-test.run", lastFail, "-timeout", "30s")
 	}
 	afterRun()
 }

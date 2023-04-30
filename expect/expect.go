@@ -1,47 +1,35 @@
 package expect
 
 import (
-	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/ymzuiku/gojest/stack"
 )
 
-var (
-	UseFailNow       = false
-	IgnoreTestingLog = true
-	IgnoreRuntimeLog = true
-)
+var UseFailNow = false
 
-func OnFailTrace(t *testing.T) {
-	stack.Debug = true
-	for i := 4; i < 99; i++ {
-		s := stack.FileLine(i)
-		if strings.Contains(s, "runtime.Caller out") {
-			break
-		}
-		if IgnoreRuntimeLog && strings.Contains(s, "go/src/runtime/") {
-			continue
-		}
-		if IgnoreTestingLog && strings.Contains(s, "testing.go:") {
-			continue
-		}
-		t.Logf("Trace %+v", stack.Red(s))
-	}
-	if UseFailNow {
-		t.FailNow()
-	}
-}
-
-// var OnFail = func(t *testing.T) {
+// func OnFailTrace(t *testing.T) {
+// 	stack.Debug = true
+// 	for i := 4; i < 99; i++ {
+// 		s := stack.FileLine(i)
+// 		if strings.Contains(s, "runtime.Caller out") {
+// 			break
+// 		}
+// 		t.Logf("Trace %+v", stack.Red(s))
+// 	}
 // 	if UseFailNow {
 // 		t.FailNow()
 // 	}
 // }
 
+var OnFail = func(t *testing.T) {
+	if UseFailNow {
+		t.FailNow()
+	}
+}
+
 func fail(t *testing.T) {
-	OnFailTrace(t)
+	OnFail(t)
 }
 
 func Equal(t *testing.T, a, b any) {
