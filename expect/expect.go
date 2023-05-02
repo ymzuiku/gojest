@@ -6,7 +6,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var UseFailNow = false
+var UseFailNow = true
 
 // func OnFailTrace(t *testing.T) {
 // 	stack.Debug = true
