@@ -43,10 +43,6 @@ func NewCaller(err error, caller int) error {
 	return fmt.Errorf("%s:%d %w", parseFile(file), line, err)
 }
 
-// func Log(err error) {
-// 	// err.(errorx.Error).PrintStackTrace()
-// }
-
 func FileLine(caller int) string {
 	if !Debug {
 		return ""

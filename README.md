@@ -32,19 +32,37 @@ $ go install github.com/ymzuiku/gojest@latest
 run all:
 
 ```sh
-gojest ./...
+gojest
 ```
 
 Run sub dir:
 
 ```sh
-gojest ./dir/...
+gojest -url ./dir/...
 ```
 
 Auto run last action when your edit code:
 
 ```sh
-gojest ./... -w
+gojest -w
+```
+
+Run Terst function:
+
+```sh
+gojest -run TestMyFunction  -w
+```
+
+Timeout 5s:
+
+```sh
+gojest -w -t 5s
+```
+
+parallel 10:
+
+```sh
+gojest -w -p 10
 ```
 
 And when your keydown:

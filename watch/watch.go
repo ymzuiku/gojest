@@ -60,7 +60,7 @@ func filter(line string) string {
 		if passReg.MatchString(v) {
 			passNum += 1
 		}
-		if strings.Contains(v, "(cached)") || strings.Contains(v, "[no test files]") || strings.Contains(v, "[no tests to run]") || onlyFailReg.MatchString(v) || isonlyPath(v) {
+		if strings.Contains(v, "[no test files]") || strings.Contains(v, "[no tests to run]") || onlyFailReg.MatchString(v) || isonlyPath(v) {
 			continue
 		}
 		if failReg.MatchString(v) {
@@ -88,8 +88,9 @@ func filter(line string) string {
 
 	}
 	if len(nextLine) == 0 {
-		return "-"
+		return ""
 	}
+
 	return strings.Join(nextLine, "\n") + "\n"
 }
 
@@ -103,8 +104,14 @@ var runner = map[string]func(){
 }
 
 var (
-	url     string
-	isWatch bool
+	url            = ""
+	isWatch        = false
+	parallel       = ""
+	parallelKey    = ""
+	timeout        = "5s"
+	runFunctionKey = ""
+	runFunction    = ""
+	count          = "-count=1"
 )
 
 func fixWatchUrl(s string) []string {
@@ -119,7 +126,7 @@ func Start() {
 		os.Exit(1)
 	}
 
-	url = os.Args[1]
+	url = "./..."
 
 	if err := keyboard.Open(); err != nil {
 		panic(err)
@@ -130,11 +137,32 @@ func Start() {
 
 	fmt.Println("Press ESC to quit")
 
-	runAll()
-	for _, arg := range os.Args {
+	for i, arg := range os.Args {
 		if arg == "-w" {
 			isWatch = true
 		}
+		if arg == "-url" {
+			url = os.Args[i+1]
+		}
+		if arg == "-run" {
+			runFunctionKey = "-run"
+			runFunction = os.Args[i+1]
+		}
+		if arg == "-t" {
+			timeout = os.Args[i+1]
+		}
+		if strings.Contains(arg, "-count=") {
+			count = arg
+		}
+		if arg == "-p" {
+			parallelKey = "-parallel"
+			parallel = os.Args[i+1]
+		}
+	}
+	if count != "-count=1" {
+		runNoCacheAll()
+	} else {
+		runAll()
 	}
 
 	if isWatch {
@@ -182,7 +210,7 @@ func runAll() {
 	lastFail = ""
 	lastFailPath = ""
 	fmt.Println("Run all:")
-	_ = execx.Run(context.Background(), filter, "go", "test", url)
+	_ = execx.Run(context.Background(), filter, "go", "test", runFunctionKey, runFunction, url, parallelKey, parallel, "-timeout", timeout)
 	afterRun()
 }
 
@@ -191,7 +219,8 @@ func runNoCacheAll() {
 	lastFail = ""
 	lastFailPath = ""
 	fmt.Println("Run all no use cache:")
-	_ = execx.Run(context.Background(), filter, "go", "test", url, "-count=1")
+	_ = execx.Run(context.Background(), filter, "go", "clean", "-testcache")
+	_ = execx.Run(context.Background(), filter, "go", "test", runFunctionKey, runFunction, url, parallelKey, parallel, count, "-timeout", timeout)
 	afterRun()
 }
 
@@ -204,10 +233,10 @@ func runFocus() {
 	}
 	fmt.Println("Run last fails: " + lastFail)
 	if lastFailPath == "" {
-		_ = execx.Run(context.Background(), filter, "go", "test", url, "-test.run", lastFail, "-timeout", "30s")
+		_ = execx.Run(context.Background(), filter, "go", "test", runFunctionKey, runFunction, url, "-test.run", lastFail, parallelKey, parallel, "-timeout", timeout)
 	} else {
 		fmt.Println("run in file: " + lastFailPath)
-		_ = execx.Run(context.Background(), filter, "go", "test", lastFailPath, "-test.run", lastFail, "-timeout", "30s")
+		_ = execx.Run(context.Background(), filter, "go", "test", runFunctionKey, runFunction, lastFailPath, "-test.run", lastFail, parallelKey, parallel, "-timeout", timeout)
 	}
 	afterRun()
 }
@@ -221,16 +250,16 @@ func runNoCacheFocus() {
 	}
 	fmt.Println("Run last fails no cache: " + lastFail)
 	if lastFailPath == "" {
-		_ = execx.Run(context.Background(), filter, "go", "test", url, "-count=1", "-test.run", lastFail, "-timeout", "30s")
+		_ = execx.Run(context.Background(), filter, "go", "test", runFunctionKey, runFunction, url, count, "-test.run", lastFail, parallelKey, parallel, "-timeout", timeout)
 	} else {
 		fmt.Println("fail in path: " + lastFailPath)
-		_ = execx.Run(context.Background(), filter, "go", "test", lastFailPath, "-count=1", "-test.run", lastFail, "-timeout", "30s")
+		_ = execx.Run(context.Background(), filter, "go", "test", runFunctionKey, runFunction, lastFailPath, count, "-test.run", lastFail, parallelKey, parallel, "-timeout", timeout)
 	}
 	afterRun()
 }
 
 func runQuit() {
-	fmt.Println("Bye.")
+	fmt.Println("Bye~")
 	os.Exit(0)
 }
 
@@ -245,7 +274,7 @@ func runHelp() {
 }
 
 func printTip() {
-	str := fmt.Sprintf("\nNow action: (%s); Please keydown: (a) All, (f) Focus first fail, (h) Helps, (q) Quit", input)
+	str := fmt.Sprintf("\nNow action: (%s); Please keydown: (a) All, (shift+a) All no cache, (f) Focus first fail, (h) Helps, (q) Quit", input)
 
 	if isWatch {
 		fmt.Println(str + ", Watching...")
