@@ -141,8 +141,8 @@ func Start() {
 		if arg == "-w" {
 			isWatch = true
 		}
-		if arg == "-url" {
-			url = os.Args[i+1]
+		if strings.HasPrefix(arg, "./") {
+			url = arg
 		}
 		if arg == "-run" {
 			runFunctionKey = "-run"

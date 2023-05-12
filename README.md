@@ -38,7 +38,7 @@ gojest
 Run sub dir:
 
 ```sh
-gojest -url ./dir/...
+gojest ./dir/...
 ```
 
 Auto run last action when your edit code:
