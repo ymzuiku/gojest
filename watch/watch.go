@@ -108,6 +108,7 @@ var (
 	isWatch        = false
 	parallel       = ""
 	parallelKey    = ""
+	timeoutKey     = "-timeout"
 	timeout        = "5s"
 	runFunctionKey = ""
 	runFunction    = ""
@@ -144,10 +145,6 @@ func Start() {
 		if strings.HasPrefix(arg, "./") {
 			url = arg
 		}
-		if arg == "-run" {
-			runFunctionKey = "-run"
-			runFunction = os.Args[i+1]
-		}
 		if arg == "-t" {
 			timeout = os.Args[i+1]
 		}
@@ -157,6 +154,12 @@ func Start() {
 		if arg == "-p" {
 			parallelKey = "-parallel"
 			parallel = os.Args[i+1]
+		}
+		if arg == "-run" {
+			runFunctionKey = "-run"
+			runFunction = os.Args[i+1]
+			timeout = ""
+			timeoutKey = ""
 		}
 	}
 	if count != "-count=1" {
@@ -210,7 +213,7 @@ func runAll() {
 	lastFail = ""
 	lastFailPath = ""
 	fmt.Println("Run all:")
-	_ = execx.Run(context.Background(), filter, "go", "test", runFunctionKey, runFunction, url, parallelKey, parallel, "-timeout", timeout)
+	_ = execx.Run(context.Background(), filter, "go", "test", runFunctionKey, runFunction, url, parallelKey, parallel, timeoutKey, timeout)
 	afterRun()
 }
 
@@ -220,7 +223,7 @@ func runNoCacheAll() {
 	lastFailPath = ""
 	fmt.Println("Run all no use cache:")
 	_ = execx.Run(context.Background(), filter, "go", "clean", "-testcache")
-	_ = execx.Run(context.Background(), filter, "go", "test", runFunctionKey, runFunction, url, parallelKey, parallel, count, "-timeout", timeout)
+	_ = execx.Run(context.Background(), filter, "go", "test", runFunctionKey, runFunction, url, parallelKey, parallel, count, timeoutKey, timeout)
 	afterRun()
 }
 
@@ -233,10 +236,10 @@ func runFocus() {
 	}
 	fmt.Println("Run last fails: " + lastFail)
 	if lastFailPath == "" {
-		_ = execx.Run(context.Background(), filter, "go", "test", runFunctionKey, runFunction, url, "-test.run", lastFail, parallelKey, parallel, "-timeout", timeout)
+		_ = execx.Run(context.Background(), filter, "go", "test", runFunctionKey, runFunction, url, "-test.run", lastFail, parallelKey, parallel, timeoutKey, timeout)
 	} else {
 		fmt.Println("run in file: " + lastFailPath)
-		_ = execx.Run(context.Background(), filter, "go", "test", runFunctionKey, runFunction, lastFailPath, "-test.run", lastFail, parallelKey, parallel, "-timeout", timeout)
+		_ = execx.Run(context.Background(), filter, "go", "test", runFunctionKey, runFunction, lastFailPath, "-test.run", lastFail, parallelKey, parallel, timeoutKey, timeout)
 	}
 	afterRun()
 }
@@ -250,10 +253,10 @@ func runNoCacheFocus() {
 	}
 	fmt.Println("Run last fails no cache: " + lastFail)
 	if lastFailPath == "" {
-		_ = execx.Run(context.Background(), filter, "go", "test", runFunctionKey, runFunction, url, count, "-test.run", lastFail, parallelKey, parallel, "-timeout", timeout)
+		_ = execx.Run(context.Background(), filter, "go", "test", runFunctionKey, runFunction, url, count, "-test.run", lastFail, parallelKey, parallel, timeoutKey, timeout)
 	} else {
 		fmt.Println("fail in path: " + lastFailPath)
-		_ = execx.Run(context.Background(), filter, "go", "test", runFunctionKey, runFunction, lastFailPath, count, "-test.run", lastFail, parallelKey, parallel, "-timeout", timeout)
+		_ = execx.Run(context.Background(), filter, "go", "test", runFunctionKey, runFunction, lastFailPath, count, "-test.run", lastFail, parallelKey, parallel, timeoutKey, timeout)
 	}
 	afterRun()
 }

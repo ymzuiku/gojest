@@ -1,4 +1,4 @@
-v=v1.2.1
+v=v1.3.2
 git tag $v
 git push --tags
 # go install 
