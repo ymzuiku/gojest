@@ -30,7 +30,6 @@ func isonlyPath(v string) bool {
 	return strings.Contains(v, pwd.Pwd()) && !strings.Contains(strings.Replace(v, pwd.Pwd(), "", 1), " ")
 }
 
-// var lastLine = ""
 var (
 	passNum          = 0
 	failNum          = 0
