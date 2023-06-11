@@ -108,7 +108,7 @@ var (
 	parallel       = ""
 	parallelKey    = ""
 	timeoutKey     = "-timeout"
-	timeout        = "5s"
+	timeout        = "20s"
 	runFunctionKey = ""
 	runFunction    = ""
 	count          = "-count=1"
