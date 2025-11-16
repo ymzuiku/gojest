@@ -4,7 +4,7 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/ymzuiku/gojest/expect"
+	"github.com/stretchr/testify/assert"
 	"github.com/ymzuiku/gojest/stack"
 )
 
@@ -20,7 +20,7 @@ func useErr2() error {
 
 func TestStack(t *testing.T) {
 	t.Run("", func(t *testing.T) {
-		expect.ErrorIs(t, useErr2(), err1)
+		assert.ErrorIs(t, useErr2(), err1)
 	})
 }
 
@@ -30,6 +30,6 @@ func useErrNil() error {
 
 func TestStackNil(t *testing.T) {
 	t.Run("", func(t *testing.T) {
-		expect.ErrorIs(t, useErrNil(), nil)
+		assert.ErrorIs(t, useErrNil(), nil)
 	})
 }

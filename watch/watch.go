@@ -3,12 +3,16 @@ package watch
 import (
 	"context"
 	"fmt"
+	"io"
 	"os"
+	"os/exec"
+	"os/signal"
 	"regexp"
+	"runtime"
 	"strings"
 
+	"github.com/urfave/cli/v2"
 	"github.com/ymzuiku/fswatch"
-	"github.com/ymzuiku/gojest/execx"
 	"github.com/ymzuiku/gojest/keyboard"
 	"github.com/ymzuiku/gojest/pwd"
 	"github.com/ymzuiku/gojest/stack"
@@ -74,7 +78,6 @@ func filter(line string) string {
 			if strings.Contains(v, ".go:") {
 
 				text := pwd.ReplacePwd(v)
-				text = regexp.MustCompile(`expect\.go:\d{1,4}(?::\d{1,4})?:`).ReplaceAllString(text, "")
 				text = strings.ReplaceAll(text, "\n", "  ")
 				text = strings.ReplaceAll(text, "\t", "  ")
 				text = strings.Trim(text, " ")
@@ -119,84 +122,149 @@ func fixWatchUrl(s string) []string {
 }
 
 var input = "a"
+var keyboardOpened = false
 
 func Start() {
-	if len(os.Args) < 2 {
-		fmt.Println("\nerror, gojest need input path, like: ./...")
+	app := &cli.App{
+		Name:  "gojest",
+		Usage: "Go test runner with watch mode",
+		Flags: []cli.Flag{
+			&cli.BoolFlag{
+				Name:    "watch",
+				Aliases: []string{"w"},
+				Usage:   "Enable watch mode",
+			},
+			&cli.StringFlag{
+				Name:    "timeout",
+				Aliases: []string{"t"},
+				Usage:   "Test timeout",
+				Value:   "20s",
+			},
+			&cli.StringFlag{
+				Name:  "count",
+				Usage: "Test count",
+				Value: "-count=1",
+			},
+			&cli.StringFlag{
+				Name:    "parallel",
+				Aliases: []string{"p"},
+				Usage:   "Parallel test count",
+			},
+			&cli.StringFlag{
+				Name:  "run",
+				Usage: "Run specific test function",
+			},
+		},
+		Action: func(c *cli.Context) error {
+			if c.NArg() == 0 {
+				url = "./..."
+			} else {
+				url = c.Args().Get(0)
+			}
+
+			isWatch = c.Bool("watch")
+			timeout = c.String("timeout")
+			count = c.String("count")
+			if c.String("parallel") != "" {
+				parallelKey = "-parallel"
+				parallel = c.String("parallel")
+			}
+			if c.String("run") != "" {
+				runFunctionKey = "-run"
+				runFunction = c.String("run")
+				timeout = ""
+				timeoutKey = ""
+			}
+
+			// Setup signal handler to restore terminal on SIGINT
+			sigChan := make(chan os.Signal, 1)
+			signal.Notify(sigChan, os.Interrupt)
+			go func() {
+				<-sigChan
+				cleanupAndExit()
+			}()
+
+			if err := keyboard.Open(); err != nil {
+				return err
+			}
+			keyboardOpened = true
+			defer func() {
+				keyboardOpened = false
+				_ = keyboard.Close()
+				// Give a moment for terminal to restore
+				os.Stdout.WriteString("\r\n")
+			}()
+
+			fmt.Println("Press ESC to quit")
+
+			if count != "-count=1" {
+				runNoCacheAll()
+			} else {
+				runAll()
+			}
+
+			if isWatch {
+				go func() {
+					fswatch.Watch(fixWatchUrl(url), []string{}, func(file string) {
+						if fn, ok := runner[input]; ok {
+							fn()
+							printTip()
+						}
+					})
+				}()
+			}
+
+			for {
+				printTip()
+				char, key, err := keyboard.GetKey()
+				if err != nil {
+					return err
+				}
+				// Handle ESC key
+				if key == keyboard.KeyEsc {
+					runQuit()
+					return nil
+				}
+				// Handle Ctrl+C
+				if key == keyboard.KeyCtrlC {
+					runQuit()
+					return nil
+				}
+				// Handle regular character keys (like 'f', 'a', etc.)
+				if char != 0 {
+					input = string(char)
+					if fn, ok := runner[input]; ok {
+						fn()
+					}
+				}
+			}
+		},
+	}
+
+	if err := app.Run(os.Args); err != nil {
+		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 		os.Exit(1)
 	}
+}
 
-	url = "./..."
-
-	if err := keyboard.Open(); err != nil {
-		panic(err)
+func callClear() {
+	var cmd *exec.Cmd
+	switch runtime.GOOS {
+	case "linux", "darwin":
+		cmd = exec.Command("clear")
+	case "windows":
+		cmd = exec.Command("cmd", "/c", "cls")
+	default:
+		return
 	}
-	defer func() {
-		_ = keyboard.Close()
-	}()
-
-	fmt.Println("Press ESC to quit")
-
-	for i, arg := range os.Args {
-		if arg == "-w" {
-			isWatch = true
-		}
-		if strings.HasPrefix(arg, "./") {
-			url = arg
-		}
-		if arg == "-t" {
-			timeout = os.Args[i+1]
-		}
-		if strings.Contains(arg, "-count=") {
-			count = arg
-		}
-		if arg == "-p" {
-			parallelKey = "-parallel"
-			parallel = os.Args[i+1]
-		}
-		if arg == "-run" {
-			runFunctionKey = "-run"
-			runFunction = os.Args[i+1]
-			timeout = ""
-			timeoutKey = ""
-		}
-	}
-	if count != "-count=1" {
-		runNoCacheAll()
-	} else {
-		runAll()
-	}
-
-	if isWatch {
-		go func() {
-			fswatch.Watch(fixWatchUrl(url), []string{}, func(file string) {
-				if fn, ok := runner[input]; ok {
-					fn()
-					printTip()
-				}
-			})
-		}()
-	}
-
-	for {
-		printTip()
-		char, key, err := keyboard.GetKey()
-		if err != nil {
-			panic(err)
-		}
-		input = string(char)
-		if fn, ok := runner[input]; ok {
-			fn()
-		} else if key == keyboard.KeyCtrlC {
-			runQuit()
-		}
-	}
+	cmd.Stdout = os.Stdout
+	_ = cmd.Run()
 }
 
 func beforeRun() {
 	passNum = 0
 	failNum = 0
-	execx.CallClear()
+	callClear()
 }
 
 func afterRun() {
@@ -207,12 +275,68 @@ func afterRun() {
 	}
 }
 
+func runCommand(ctx context.Context, filterFn func(string) string, args ...string) error {
+	var nextArgs []string
+	for _, str := range args {
+		if str != "" {
+			nextArgs = append(nextArgs, str)
+		}
+	}
+	fmt.Println(strings.Join(nextArgs, " "))
+	cmd := exec.CommandContext(ctx, nextArgs[0], nextArgs[1:]...)
+
+	stdout, _ := cmd.StdoutPipe()
+	stderr, _ := cmd.StderrPipe()
+
+	if err := cmd.Start(); err != nil {
+		fmt.Printf("Error starting command: %s......", err.Error())
+		return err
+	}
+
+	go asyncLog(stdout, filterFn)
+	go asyncLog(stderr, filterFn)
+	if err := cmd.Wait(); err != nil {
+		if !strings.Contains(err.Error(), "exit status 1") {
+			fmt.Println(err.Error())
+		}
+	}
+
+	return nil
+}
+
+func asyncLog(reader io.ReadCloser, filterFn func(string) string) {
+	cache := ""
+	buf := make([]byte, 1024*8)
+	for {
+		num, err := reader.Read(buf)
+		if err != nil && err != io.EOF {
+			return
+		}
+		if num > 0 {
+			b := buf[:num]
+			s := strings.Split(string(b), "\n")
+			line := strings.Join(s[:len(s)-1], "\n")
+			if filterFn != nil {
+				line = filterFn(line)
+				if line != "" {
+					fmt.Printf("%s%s", cache, line)
+				} else {
+					fmt.Printf("%s", cache)
+				}
+			} else {
+				fmt.Printf("%s%s\n", cache, line)
+			}
+			cache = s[len(s)-1]
+		}
+	}
+}
+
 func runAll() {
 	beforeRun()
 	lastFail = ""
 	lastFailPath = ""
 	fmt.Println("Run all:")
-	_ = execx.Run(context.Background(), filter, "go", "test", runFunctionKey, runFunction, url, parallelKey, parallel, timeoutKey, timeout)
+	_ = runCommand(context.Background(), filter, "go", "test", runFunctionKey, runFunction, url, parallelKey, parallel, timeoutKey, timeout)
 	afterRun()
 }
 
@@ -221,8 +345,8 @@ func runNoCacheAll() {
 	lastFail = ""
 	lastFailPath = ""
 	fmt.Println("Run all no use cache:")
-	_ = execx.Run(context.Background(), filter, "go", "clean", "-testcache")
-	_ = execx.Run(context.Background(), filter, "go", "test", runFunctionKey, runFunction, url, parallelKey, parallel, count, timeoutKey, timeout)
+	_ = runCommand(context.Background(), filter, "go", "clean", "-testcache")
+	_ = runCommand(context.Background(), filter, "go", "test", runFunctionKey, runFunction, url, parallelKey, parallel, count, timeoutKey, timeout)
 	afterRun()
 }
 
@@ -235,10 +359,10 @@ func runFocus() {
 	}
 	fmt.Println("Run last fails: " + lastFail)
 	if lastFailPath == "" {
-		_ = execx.Run(context.Background(), filter, "go", "test", runFunctionKey, runFunction, url, "-test.run", lastFail, parallelKey, parallel, timeoutKey, timeout)
+		_ = runCommand(context.Background(), filter, "go", "test", runFunctionKey, runFunction, url, "-test.run", lastFail, parallelKey, parallel, timeoutKey, timeout)
 	} else {
 		fmt.Println("run in file: " + lastFailPath)
-		_ = execx.Run(context.Background(), filter, "go", "test", runFunctionKey, runFunction, lastFailPath, "-test.run", lastFail, parallelKey, parallel, timeoutKey, timeout)
+		_ = runCommand(context.Background(), filter, "go", "test", runFunctionKey, runFunction, lastFailPath, "-test.run", lastFail, parallelKey, parallel, timeoutKey, timeout)
 	}
 	afterRun()
 }
@@ -252,17 +376,26 @@ func runNoCacheFocus() {
 	}
 	fmt.Println("Run last fails no cache: " + lastFail)
 	if lastFailPath == "" {
-		_ = execx.Run(context.Background(), filter, "go", "test", runFunctionKey, runFunction, url, count, "-test.run", lastFail, parallelKey, parallel, timeoutKey, timeout)
+		_ = runCommand(context.Background(), filter, "go", "test", runFunctionKey, runFunction, url, count, "-test.run", lastFail, parallelKey, parallel, timeoutKey, timeout)
 	} else {
 		fmt.Println("fail in path: " + lastFailPath)
-		_ = execx.Run(context.Background(), filter, "go", "test", runFunctionKey, runFunction, lastFailPath, count, "-test.run", lastFail, parallelKey, parallel, timeoutKey, timeout)
+		_ = runCommand(context.Background(), filter, "go", "test", runFunctionKey, runFunction, lastFailPath, count, "-test.run", lastFail, parallelKey, parallel, timeoutKey, timeout)
 	}
 	afterRun()
 }
 
+func cleanupAndExit() {
+	if keyboardOpened {
+		keyboardOpened = false
+		_ = keyboard.Close()
+	}
+	os.Stdout.WriteString("\r\n")
+	os.Exit(0)
+}
+
 func runQuit() {
 	fmt.Println("Bye~")
-	os.Exit(0)
+	cleanupAndExit()
 }
 
 func runHelp() {
